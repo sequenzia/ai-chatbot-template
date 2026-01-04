@@ -196,10 +196,10 @@ export function InputBox({
             {/* Bottom Bar: Tools & Actions */}
             <div className="flex items-center justify-between px-2 pb-1 pt-2">
               {/* Left: Attachments */}
-              <div className="flex gap-1">
+              <div className="flex gap-0">
                 <button
                   aria-label="Attach file"
-                  className="p-3 min-h-[44px] min-w-[44px] hover:bg-accent/50 rounded-lg transition-colors text-muted-foreground hover:text-foreground flex items-center justify-center"
+                  className="p-1 min-h-[36px] min-w-[36px] hover:bg-accent/50 rounded-lg transition-colors text-muted-foreground hover:text-foreground flex items-center justify-center"
                 >
                   <Paperclip className="size-5" />
                 </button>
@@ -212,7 +212,7 @@ export function InputBox({
                     }}
                     aria-label={showSuggestions ? "Hide suggestions" : "Show suggestions"}
                     aria-expanded={showSuggestions}
-                    className={`p-3 min-h-[44px] min-w-[44px] hover:bg-accent/50 rounded-lg transition-colors flex items-center justify-center ${
+                    className={`p-1 min-h-[36px] min-w-[36px] hover:bg-accent/50 rounded-lg transition-colors flex items-center justify-center ${
                       showSuggestions
                         ? "bg-accent/50 text-foreground"
                         : "text-muted-foreground hover:text-foreground"

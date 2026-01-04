@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, ChevronDown, Lightbulb } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { SUGGESTIONS } from "../constants/suggestions";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 
 interface InputBoxProps {
   onSend: (message: string) => void;
@@ -18,15 +19,30 @@ export function InputBox({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedModel, setSelectedModel] = useState("GPT-5-Nano");
+  const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const modelSelectorRef = useRef<HTMLDivElement>(null);
+  const suggestionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const prefersReducedMotion = useReducedMotion();
 
-  // Auto-expand textarea
+  // Auto-expand textarea with scroll preservation
   useEffect(() => {
     if (textareaRef.current) {
+      const chatStream = document.querySelector('[data-chat-stream]');
+      const wasAtBottom = chatStream &&
+        chatStream.scrollHeight - chatStream.scrollTop <= chatStream.clientHeight + 50;
+
+      // Responsive max height based on viewport width
+      const maxHeight = window.innerWidth < 640 ? 120 : (window.innerWidth < 768 ? 160 : 200);
+
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+
+      // Keep scroll at bottom if it was there
+      if (wasAtBottom && chatStream) {
+        chatStream.scrollTop = chatStream.scrollHeight;
+      }
     }
   }, [input]);
 
@@ -58,6 +74,33 @@ export function InputBox({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Handle suggestions popup keyboard navigation
+    if (showSuggestions) {
+      if (e.key === 'Escape') {
+        setShowSuggestions(false);
+        setFocusedSuggestionIndex(-1);
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIndex = focusedSuggestionIndex < SUGGESTIONS.length - 1
+          ? focusedSuggestionIndex + 1
+          : 0;
+        setFocusedSuggestionIndex(nextIndex);
+        suggestionRefs.current[nextIndex]?.focus();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIndex = focusedSuggestionIndex > 0
+          ? focusedSuggestionIndex - 1
+          : SUGGESTIONS.length - 1;
+        setFocusedSuggestionIndex(prevIndex);
+        suggestionRefs.current[prevIndex]?.focus();
+        return;
+      }
+    }
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -67,6 +110,7 @@ export function InputBox({
   const handleSuggestionClick = (desc: string) => {
     onSend(desc);
     setShowSuggestions(false);
+    setFocusedSuggestionIndex(-1);
   };
 
   const models = ["GPT-5-Nano", "GPT-5-Mini"];
@@ -91,22 +135,28 @@ export function InputBox({
           {showSuggestions && isFixed && (
             <motion.div
               ref={popupRef}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className="pointer-events-auto mb-4 bg-card/95 dark:bg-card/90 backdrop-blur-xl rounded-2xl border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-4"
+              role="listbox"
+              aria-label="Suggested prompts"
             >
               <div className="flex items-center gap-2 mb-3 px-2">
                 <Lightbulb className="size-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold text-foreground">Suggested Prompts</h3>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {SUGGESTIONS.map((item) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                {SUGGESTIONS.map((item, index) => (
                   <button
                     key={item.title}
+                    ref={(el) => { suggestionRefs.current[index] = el; }}
                     onClick={() => handleSuggestionClick(item.desc)}
-                    className="group p-3 bg-muted/30 hover:bg-muted/60 border border-border/50 hover:border-border rounded-lg transition-all text-left flex items-start gap-3"
+                    role="option"
+                    aria-selected={focusedSuggestionIndex === index}
+                    aria-label={`${item.title}: ${item.desc}`}
+                    className="group p-3 min-h-[44px] bg-muted/30 hover:bg-muted/60 border border-border/50 hover:border-border rounded-lg transition-all text-left flex items-start gap-3 focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
                     <item.icon className="size-4 text-muted-foreground group-hover:text-foreground mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1 min-w-0">
@@ -139,21 +189,30 @@ export function InputBox({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={isFixed ? "Reply..." : "How can I help you today?"}
-              className="w-full bg-transparent border-none outline-none focus:ring-0 resize-none px-4 py-3 text-foreground placeholder:text-muted-foreground max-h-[200px] overflow-y-auto min-h-[56px] text-base"
+              aria-label={isFixed ? "Reply to conversation" : "Start a conversation"}
+              className="w-full bg-transparent border-none outline-none focus:ring-0 resize-none px-4 py-3 text-foreground placeholder:text-muted-foreground max-h-[120px] sm:max-h-[160px] md:max-h-[200px] overflow-y-auto min-h-[56px] text-base input-landscape-constraint"
             />
 
             {/* Bottom Bar: Tools & Actions */}
             <div className="flex items-center justify-between px-2 pb-1 pt-2">
               {/* Left: Attachments */}
               <div className="flex gap-1">
-                <button className="p-2 hover:bg-accent/50 rounded-lg transition-colors text-muted-foreground hover:text-foreground">
+                <button
+                  aria-label="Attach file"
+                  className="p-3 min-h-[44px] min-w-[44px] hover:bg-accent/50 rounded-lg transition-colors text-muted-foreground hover:text-foreground flex items-center justify-center"
+                >
                   <Paperclip className="size-5" />
                 </button>
                 {/* Only show lightbulb when isFixed (after welcome screen) */}
                 {isFixed && (
                   <button
-                    onClick={() => setShowSuggestions(!showSuggestions)}
-                    className={`p-2 hover:bg-accent/50 rounded-lg transition-colors ${
+                    onClick={() => {
+                      setShowSuggestions(!showSuggestions);
+                      setFocusedSuggestionIndex(-1);
+                    }}
+                    aria-label={showSuggestions ? "Hide suggestions" : "Show suggestions"}
+                    aria-expanded={showSuggestions}
+                    className={`p-3 min-h-[44px] min-w-[44px] hover:bg-accent/50 rounded-lg transition-colors flex items-center justify-center ${
                       showSuggestions
                         ? "bg-accent/50 text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -169,7 +228,10 @@ export function InputBox({
                 <div ref={modelSelectorRef} className="relative">
                   <button
                     onClick={() => setShowModelSelector(!showModelSelector)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-accent/50 transition-colors text-sm font-medium text-muted-foreground hover:text-foreground"
+                    aria-label={`Select model, current: ${selectedModel}`}
+                    aria-expanded={showModelSelector}
+                    aria-haspopup="listbox"
+                    className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full hover:bg-accent/50 transition-colors text-sm font-medium text-muted-foreground hover:text-foreground"
                   >
                     {selectedModel}
                     <ChevronDown className="size-3" />
@@ -179,11 +241,13 @@ export function InputBox({
                   <AnimatePresence>
                     {showModelSelector && (
                       <motion.div
-                        initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                        initial={prefersReducedMotion ? false : { opacity: 0, y: 5, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                        exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 5, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
                         className="absolute bottom-full right-0 mb-2 bg-popover/95 backdrop-blur-xl border border-border rounded-lg shadow-lg overflow-hidden min-w-[140px]"
+                        role="listbox"
+                        aria-label="Select AI model"
                       >
                         {models.map((model) => (
                           <button
@@ -192,7 +256,9 @@ export function InputBox({
                               setSelectedModel(model);
                               setShowModelSelector(false);
                             }}
-                            className={`w-full px-3 py-2 text-left text-sm font-medium transition-colors ${
+                            role="option"
+                            aria-selected={selectedModel === model}
+                            className={`w-full px-3 py-2 min-h-[44px] text-left text-sm font-medium transition-colors ${
                               selectedModel === model
                                 ? "bg-accent text-foreground"
                                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
@@ -209,7 +275,9 @@ export function InputBox({
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
-                  className={`p-2 rounded-lg transition-all flex items-center justify-center ${
+                  aria-label="Send message"
+                  aria-disabled={!input.trim() || isLoading}
+                  className={`p-3 min-h-[48px] min-w-[48px] rounded-lg transition-all flex items-center justify-center ${
                     input.trim()
                       ? "bg-primary text-primary-foreground hover:scale-105 active:scale-95 shadow-md"
                       : "bg-muted text-muted-foreground"

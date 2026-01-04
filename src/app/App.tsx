@@ -38,7 +38,14 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <div className="flex h-screen w-full bg-background text-foreground font-sans antialiased overflow-hidden transition-colors duration-200">
+      <div
+        className="flex h-screen w-full bg-background text-foreground font-sans antialiased overflow-hidden transition-colors duration-200"
+        style={{
+          paddingBottom: 'var(--safe-area-inset-bottom)',
+          paddingLeft: 'var(--safe-area-inset-left)',
+          paddingRight: 'var(--safe-area-inset-right)',
+        }}
+      >
         {/* Sidebar Component */}
         <Sidebar
           isOpen={isSidebarOpen}
@@ -55,7 +62,7 @@ export default function App() {
               isLoading={isLoading}
             />
           ) : (
-            <ChatStream messages={messages} />
+            <ChatStream messages={messages} isLoading={isLoading} />
           )}
 
           {/* Floating Input Box */}

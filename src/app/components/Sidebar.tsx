@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
+import { useDeviceType } from "../hooks/useDeviceType";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -29,19 +31,19 @@ export function Sidebar({
   onNewChat,
   showWelcomeScreen,
 }: SidebarProps) {
-  const [isMobile, setIsMobile] = useState(false);
+  const { isMobile, isTablet } = useDeviceType();
+  const prefersReducedMotion = useReducedMotion();
   const [showSettings, setShowSettings] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    const checkMobile = () =>
-      setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () =>
-      window.removeEventListener("resize", checkMobile);
-  }, []);
+  // Calculate sidebar width based on device type
+  const getSidebarWidth = () => {
+    if (!isOpen) return isMobile ? 0 : 72;
+    if (isMobile) return 'min(85vw, 320px)';
+    if (isTablet) return 300;
+    return 280;
+  };
 
   useEffect(() => {
     // Close user menu when sidebar is collapsed
@@ -78,14 +80,18 @@ export function Sidebar({
       <motion.aside
         initial={false}
         animate={{
-          width: isOpen ? 280 : isMobile ? 0 : 72,
+          width: getSidebarWidth(),
         }}
-        transition={{
+        transition={prefersReducedMotion ? { duration: 0 } : {
           type: "spring",
           stiffness: 300,
           damping: 30,
         }}
-        className="fixed lg:relative z-50 h-screen bg-sidebar border-r border-sidebar-border overflow-hidden flex flex-col shrink-0 text-sidebar-foreground transition-colors duration-200"
+        className="fixed lg:relative z-50 h-screen bg-sidebar border-r border-sidebar-border overflow-hidden flex flex-col shrink-0 text-sidebar-foreground transition-colors duration-200 sidebar-landscape-constraint"
+        style={{
+          paddingTop: 'var(--safe-area-inset-top)',
+          paddingBottom: 'var(--safe-area-inset-bottom)',
+        }}
       >
         <div
           className={`flex flex-col h-full ${isOpen ? "px-4" : "px-2"} py-4 transition-all duration-300`}
@@ -106,7 +112,9 @@ export function Sidebar({
                 </div>
                 <button
                   onClick={onToggle}
-                  className="p-1.5 hover:bg-sidebar-accent rounded-md transition-colors text-muted-foreground hover:text-sidebar-foreground"
+                  aria-label="Close sidebar"
+                  aria-expanded={isOpen}
+                  className="p-2.5 min-h-[44px] min-w-[44px] hover:bg-sidebar-accent rounded-md transition-colors text-muted-foreground hover:text-sidebar-foreground flex items-center justify-center"
                 >
                   <PanelLeftClose className="size-5" />
                 </button>
@@ -114,7 +122,9 @@ export function Sidebar({
             ) : (
               <button
                 onClick={onToggle}
-                className="p-2 hover:bg-sidebar-accent rounded-lg transition-colors text-muted-foreground hover:text-sidebar-foreground"
+                aria-label="Open sidebar"
+                aria-expanded={isOpen}
+                className="p-2.5 min-h-[44px] min-w-[44px] hover:bg-sidebar-accent rounded-lg transition-colors text-muted-foreground hover:text-sidebar-foreground flex items-center justify-center"
               >
                 <PanelLeftOpen className="size-5" />
               </button>
@@ -129,7 +139,8 @@ export function Sidebar({
               {isOpen ? (
                 <button
                   onClick={onNewChat}
-                  className="flex items-center gap-2 w-full p-2.5 bg-sidebar-accent border border-sidebar-border text-sidebar-foreground rounded-lg hover:bg-sidebar-accent/80 transition-all text-sm font-medium shadow-sm"
+                  aria-label="Start new chat"
+                  className="flex items-center gap-2 w-full p-3 min-h-[44px] bg-sidebar-accent border border-sidebar-border text-sidebar-foreground rounded-lg hover:bg-sidebar-accent/80 transition-all text-sm font-medium shadow-sm"
                 >
                   <SquarePen className="size-4" />
                   <span>New chat</span>
@@ -137,7 +148,8 @@ export function Sidebar({
               ) : (
                 <button
                   onClick={onNewChat}
-                  className="p-2 bg-background border border-border text-muted-foreground rounded-lg hover:bg-muted transition-colors shadow-sm"
+                  aria-label="Start new chat"
+                  className="p-2.5 min-h-[44px] min-w-[44px] bg-background border border-border text-muted-foreground rounded-lg hover:bg-muted transition-colors shadow-sm flex items-center justify-center"
                 >
                   <SquarePen className="size-5" />
                 </button>
@@ -148,7 +160,10 @@ export function Sidebar({
           {/* Navigation Items (Visible in Collapsed) */}
           {!isOpen && (
             <div className="flex flex-col gap-4 items-center w-full">
-              <button className="p-2 bg-background border border-border text-muted-foreground rounded-lg hover:bg-muted transition-colors shadow-sm">
+              <button
+                aria-label="View chats"
+                className="p-2.5 min-h-[44px] min-w-[44px] bg-background border border-border text-muted-foreground rounded-lg hover:bg-muted transition-colors shadow-sm flex items-center justify-center"
+              >
                 <MessageSquare className="size-5" />
               </button>
             </div>
@@ -161,11 +176,12 @@ export function Sidebar({
                 <History className="size-3" />
                 <span>Recent History</span>
               </div>
-              <nav className="space-y-1">
+              <nav className="space-y-1" aria-label="Chat history">
                 {history.map((chat) => (
                   <button
                     key={chat.id}
-                    className="w-full flex flex-col items-start gap-1 p-2 rounded-lg hover:bg-sidebar-accent transition-colors group text-left"
+                    aria-label={`Open chat: ${chat.title}`}
+                    className="w-full flex flex-col items-start gap-1 p-3 min-h-[44px] rounded-lg hover:bg-sidebar-accent transition-colors group text-left"
                   >
                     <span className="text-sm text-sidebar-foreground/70 truncate w-full group-hover:text-sidebar-foreground">
                       {chat.title}
@@ -187,7 +203,9 @@ export function Sidebar({
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                  aria-label="User menu"
+                  aria-expanded={showUserMenu}
+                  className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
                 >
                   <div className="size-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-foreground">
                     <span className="text-xs font-medium">
@@ -208,27 +226,39 @@ export function Sidebar({
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
                       className="absolute bottom-full left-0 right-0 mb-2 bg-card/95 backdrop-blur-xl border border-border rounded-lg shadow-lg overflow-hidden"
+                      role="menu"
+                      aria-label="User menu"
                     >
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
                           setShowSettings(true);
                         }}
-                        className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
                       >
                         <Settings className="size-4" />
                         <span>Settings</span>
                       </button>
-                      <button className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground">
+                      <button
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                      >
                         <BookOpen className="size-4" />
                         <span>Learn More</span>
                       </button>
-                      <button className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground">
+                      <button
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                      >
                         <HelpCircle className="size-4" />
                         <span>Get Help</span>
                       </button>
                       <div className="border-t border-border" />
-                      <button className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground">
+                      <button
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="16"
@@ -257,7 +287,8 @@ export function Sidebar({
                     onToggle();
                     setShowUserMenu(true);
                   }}
-                  className="size-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-foreground font-medium text-xs hover:bg-sidebar-accent/80 transition-colors"
+                  aria-label="User menu"
+                  className="size-10 min-h-[44px] min-w-[44px] rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-foreground font-medium text-xs hover:bg-sidebar-accent/80 transition-colors"
                 >
                   SS
                 </button>
@@ -271,6 +302,8 @@ export function Sidebar({
                       exit={{ opacity: 0, x: -10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
                       className="absolute bottom-0 left-full ml-2 bg-card/95 backdrop-blur-xl border border-border rounded-lg shadow-lg overflow-hidden min-w-[200px]"
+                      role="menu"
+                      aria-label="User menu"
                     >
                       <div className="p-3 border-b border-border">
                         <div className="flex items-center gap-3">
@@ -285,21 +318,31 @@ export function Sidebar({
                           setShowUserMenu(false);
                           setShowSettings(true);
                         }}
-                        className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
                       >
                         <Settings className="size-4" />
                         <span>Settings</span>
                       </button>
-                      <button className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground">
+                      <button
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                      >
                         <BookOpen className="size-4" />
                         <span>Learn More</span>
                       </button>
-                      <button className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground">
+                      <button
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                      >
                         <HelpCircle className="size-4" />
                         <span>Get Help</span>
                       </button>
                       <div className="border-t border-border" />
-                      <button className="flex items-center gap-3 w-full p-3 hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground">
+                      <button
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full p-3 min-h-[44px] hover:bg-sidebar-accent transition-colors text-sm text-muted-foreground hover:text-sidebar-foreground"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="16"
@@ -330,7 +373,13 @@ export function Sidebar({
       {!isOpen && isMobile && (
         <button
           onClick={onToggle}
-          className="fixed top-4 left-4 z-40 p-2 hover:bg-muted rounded-lg transition-colors border border-border bg-background shadow-sm lg:hidden"
+          aria-label="Open navigation menu"
+          aria-expanded={isOpen}
+          className="fixed z-40 p-3 min-h-[48px] min-w-[48px] hover:bg-muted rounded-lg transition-colors border border-border bg-background shadow-sm lg:hidden flex items-center justify-center"
+          style={{
+            top: 'max(1rem, var(--safe-area-inset-top))',
+            left: 'max(1rem, var(--safe-area-inset-left))',
+          }}
         >
           <Menu className="size-5 text-muted-foreground" />
         </button>
@@ -340,7 +389,12 @@ export function Sidebar({
       {!isOpen && isMobile && !showWelcomeScreen && (
         <button
           onClick={onNewChat}
-          className="fixed top-4 right-4 z-40 p-2 hover:bg-muted rounded-lg transition-colors border border-border bg-background text-muted-foreground shadow-sm lg:hidden"
+          aria-label="Start new chat"
+          className="fixed z-40 p-3 min-h-[48px] min-w-[48px] hover:bg-muted rounded-lg transition-colors border border-border bg-background text-muted-foreground shadow-sm lg:hidden flex items-center justify-center"
+          style={{
+            top: 'max(1rem, var(--safe-area-inset-top))',
+            right: 'max(1rem, var(--safe-area-inset-right))',
+          }}
         >
           <SquarePen className="size-5" />
         </button>
@@ -371,7 +425,8 @@ export function Sidebar({
                 <h2 className="text-xl font-semibold text-foreground">Settings</h2>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="p-1 hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+                  aria-label="Close settings"
+                  className="p-2 min-h-[44px] min-w-[44px] hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground flex items-center justify-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -394,12 +449,15 @@ export function Sidebar({
                 {/* Theme Selection */}
                 <div>
                   <h3 className="text-sm font-medium text-foreground mb-3">Appearance</h3>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3" role="radiogroup" aria-label="Theme selection">
                     <button
                       onClick={() => {
                         if (theme === 'dark') toggleTheme();
                       }}
-                      className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border transition-all ${
+                      role="radio"
+                      aria-checked={theme === 'light'}
+                      aria-label="Light theme"
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-lg border transition-all ${
                         theme === 'light'
                           ? 'bg-accent border-border shadow-sm'
                           : 'bg-transparent border-border/50 hover:bg-accent/50'
@@ -412,7 +470,10 @@ export function Sidebar({
                       onClick={() => {
                         if (theme === 'light') toggleTheme();
                       }}
-                      className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border transition-all ${
+                      role="radio"
+                      aria-checked={theme === 'dark'}
+                      aria-label="Dark theme"
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-lg border transition-all ${
                         theme === 'dark'
                           ? 'bg-accent border-border shadow-sm'
                           : 'bg-transparent border-border/50 hover:bg-accent/50'

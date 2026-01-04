@@ -277,7 +277,7 @@ export function InputBox({
                   disabled={!input.trim() || isLoading}
                   aria-label="Send message"
                   aria-disabled={!input.trim() || isLoading}
-                  className={`p-3 min-h-[48px] min-w-[48px] rounded-lg transition-all flex items-center justify-center ${
+                  className={`p-3 min-h-[36px] min-w-[36px] rounded-lg transition-all flex items-center justify-center ${
                     input.trim()
                       ? "bg-primary text-primary-foreground hover:scale-105 active:scale-95 shadow-md"
                       : "bg-muted text-muted-foreground"

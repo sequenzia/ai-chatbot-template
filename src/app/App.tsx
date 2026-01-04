@@ -1,12 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { ChatStream, Message } from "./components/ChatStream";
 import { InputBox } from "./components/InputBox";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { ThemeProvider } from "./context/ThemeContext";
 
+const SIDEBAR_STORAGE_KEY = "sidebar-open";
+
 export default function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+    return stored === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(isSidebarOpen));
+  }, [isSidebarOpen]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 

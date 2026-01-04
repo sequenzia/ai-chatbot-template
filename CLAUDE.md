@@ -2,67 +2,47 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
-
-This is a Figma Make-generated AI Chatbot interface built with React 18, Vite, and Tailwind CSS v4. The design originates from Figma and includes shadcn/ui components. **Note:** Files are auto-synced from Figma Make - manual edits may be overwritten by future syncs.
-
-## Development Commands
+## Commands
 
 ```bash
-npm i          # Install dependencies
-npm run dev    # Start Vite dev server
-npm run build  # Production build
+# Development server
+npm run dev
+
+# Production build
+npm run build
 ```
 
 ## Architecture
 
-### Entry Flow
-`index.html` → `src/main.tsx` → `src/app/App.tsx`
+This is a React + Vite + Tailwind CSS v4 AI chatbot template. It uses React 18 with peer dependencies.
 
-### Core Components
-- **App.tsx** - Main component, manages message state and coordinates Sidebar, ChatStream, InputBox
-- **Sidebar.tsx** - Navigation with collapsible state and theme toggle (collapses below 1024px)
-- **ChatStream.tsx** - Displays messages with motion animations, auto-scrolls on new messages
-- **InputBox.tsx** - Auto-expanding textarea with model selector dropdown and suggestion prompts
-- **WelcomeScreen.tsx** - Initial state UI with clickable suggestion prompts
+### Entry Points
+- `index.html` - HTML entry point
+- `src/main.tsx` - React entry point, mounts `<App />` to `#root`
+- `src/app/App.tsx` - Main application component with chat state management
 
-### Message System
-Messages use the interface `{ id, role: 'user' | 'assistant', content }`. Currently uses mock 1000ms delayed responses - designed for LLM integration.
+### Key Directories
+- `src/app/components/` - Application components (ChatStream, InputBox, Sidebar, WelcomeScreen)
+- `src/app/components/ui/` - shadcn/ui component library (pre-installed)
+- `src/app/context/` - React contexts (ThemeContext for light/dark mode)
+- `src/app/constants/` - Static data (suggestions.ts)
+- `src/styles/` - CSS entry points (index.css imports fonts, tailwind, theme)
 
-### Component Locations
-- `/src/app/components/ui/` - 48+ shadcn/ui components (Radix UI-based)
-- `/src/app/components/figma/` - Figma-generated components
-- `/src/app/context/` - React Context providers (ThemeContext)
-- `/src/app/constants/` - Static data (suggestion prompts)
-
-## Styling System
-
-### Tailwind CSS v4
-Uses `@tailwindcss/vite` plugin - no traditional tailwind.config.js. Configuration is in CSS files.
-
-### Theming
-- CSS variables defined in `/src/styles/theme.css` using oklch color space
-- Light/dark mode via `.dark` class on document root
-- Theme persisted to localStorage, falls back to system preference
-- Access via `useTheme()` hook from ThemeContext
+### Styling System
+- **Tailwind CSS v4** via `@tailwindcss/vite` plugin (no tailwind.config needed)
+- **Theme variables** defined in `src/styles/theme.css` using CSS custom properties
+- **Dark mode** uses `.dark` class on `<html>` element with `@custom-variant dark (&:is(.dark *))`
+- **shadcn/ui components** use `class-variance-authority` (cva) for variants
+- **Utility function** `cn()` in `src/app/components/ui/utils.ts` merges Tailwind classes
 
 ### Path Alias
 `@` maps to `./src` (configured in vite.config.ts)
 
-## Key Dependencies
+### Component Patterns
+- UI components follow shadcn/ui conventions with `data-slot` attributes
+- Animation uses `motion/react` (Framer Motion)
+- Icons from `lucide-react`
+- Theme toggle via `useTheme()` hook from ThemeContext
 
-| Library | Purpose |
-|---------|---------|
-| motion | Animations (motion/react with AnimatePresence) |
-| cmdk | Command menu |
-| react-hook-form | Form state |
-| sonner | Toast notifications |
-| next-themes | Theme management |
-| class-variance-authority | Component variants |
-| tailwind-merge + clsx | Class utilities |
-
-## Build Configuration
-
-- **Vite plugins required:** `@vitejs/plugin-react` and `@tailwindcss/vite` (Figma Make requirement)
-- **pnpm override:** Vite locked to 6.3.5
-- **No ESLint/Prettier/TypeScript config** - Vite handles TypeScript via plugin
+### Current State
+The chat functionality is mocked. `App.tsx` has `handleSendMessage` with a setTimeout that returns a mock AI response. This is the integration point for connecting to a real LLM backend.

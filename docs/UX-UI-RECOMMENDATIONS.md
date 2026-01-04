@@ -18,11 +18,11 @@ The current implementation uses a single breakpoint (1024px) for responsive beha
 
 **Recommendation:** Implement a three-tier breakpoint system:
 
-| Device Type | Breakpoint | Sidebar Behavior |
-|-------------|------------|------------------|
-| Mobile | `< 640px` | Overlay with backdrop, full toggle |
-| Tablet | `640px - 1024px` | Collapsed icon sidebar, expandable |
-| Desktop | `> 1024px` | Full sidebar, collapsible |
+| Device Type | Breakpoint       | Sidebar Behavior                   |
+| ----------- | ---------------- | ---------------------------------- |
+| Mobile      | `< 640px`        | Overlay with backdrop, full toggle |
+| Tablet      | `640px - 1024px` | Collapsed icon sidebar, expandable |
+| Desktop     | `> 1024px`       | Full sidebar, collapsible          |
 
 **Files Affected:** `Sidebar.tsx:38-39`
 
@@ -113,12 +113,12 @@ useEffect(() => {
 
 **Recommendation:** Increase touch targets:
 
-| Element | Current | Recommended |
-|---------|---------|-------------|
-| Sidebar toggle | `p-1.5` (30px) | `p-2.5` (44px) |
-| Close buttons | `p-1` (28px) | `p-2` with 44px min-height |
-| Send button | `p-2` (36px) | `p-3` (48px) |
-| Mobile menu | `p-2` (36px) | `p-3` (48px) |
+| Element        | Current        | Recommended                |
+| -------------- | -------------- | -------------------------- |
+| Sidebar toggle | `p-1.5` (30px) | `p-2.5` (44px)             |
+| Close buttons  | `p-1` (28px)   | `p-2` with 44px min-height |
+| Send button    | `p-2` (36px)   | `p-3` (48px)               |
+| Mobile menu    | `p-2` (36px)   | `p-3` (48px)               |
 
 ### 3.2 Swipe Gestures for Sidebar
 
@@ -502,36 +502,35 @@ interface Message {
 
 ## Summary Priority Matrix
 
-| Priority | Improvement | Impact | Effort |
-|----------|-------------|--------|--------|
-| **High** | Touch target sizes | Usability | Low |
-| **High** | ARIA labels | Accessibility | Low |
-| **High** | Theme flash prevention | Visual stability | Low |
-| **High** | Safe area insets | Mobile usability | Low |
-| **Medium** | Tablet breakpoints | Device support | Medium |
-| **Medium** | Keyboard navigation | Accessibility | Medium |
-| **Medium** | Loading indicators | UX clarity | Low |
-| **Medium** | Popup positioning | Edge cases | Medium |
-| **Low** | Message virtualization | Performance | High |
-| **Low** | Swipe gestures | Mobile UX | Medium |
-| **Low** | Landscape handling | Edge cases | Medium |
+| Priority   | Improvement            | Impact           | Effort |
+| ---------- | ---------------------- | ---------------- | ------ |
+| **High**   | Touch target sizes     | Usability        | Low    |
+| **High**   | ARIA labels            | Accessibility    | Low    |
+| **High**   | Theme flash prevention | Visual stability | Low    |
+| **High**   | Safe area insets       | Mobile usability | Low    |
+| **Medium** | Tablet breakpoints     | Device support   | Medium |
+| **Medium** | Keyboard navigation    | Accessibility    | Medium |
+| **Medium** | Loading indicators     | UX clarity       | Low    |
+| **Medium** | Popup positioning      | Edge cases       | Medium |
+| **Low**    | Message virtualization | Performance      | High   |
+| **Low**    | Swipe gestures         | Mobile UX        | Medium |
+| **Low**    | Landscape handling     | Edge cases       | Medium |
 
 ---
 
 ## Implementation Notes
 
-1. **Figma Make Sync Warning:** This project auto-syncs from Figma. Manual changes may be overwritten. Consider:
    - Creating wrapper components for customizations
    - Using CSS overrides in a separate file
    - Documenting which changes need to be reapplied after syncs
 
-2. **Testing Recommendations:**
+1. **Testing Recommendations:**
    - Test on actual devices, not just browser devtools
    - Use BrowserStack or similar for device coverage
    - Test with screen readers (VoiceOver, NVDA, TalkBack)
    - Test with keyboard-only navigation
 
-3. **Devices to Test:**
+2. **Devices to Test:**
    - iPhone SE (smallest modern iPhone)
    - iPhone 14 Pro (with Dynamic Island)
    - iPad Mini / iPad Pro

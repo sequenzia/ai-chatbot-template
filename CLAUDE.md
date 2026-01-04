@@ -46,3 +46,16 @@ This is a React + Vite + Tailwind CSS v4 AI chatbot template. It uses React 18 w
 
 ### Current State
 The chat functionality is mocked. `App.tsx` has `handleSendMessage` with a setTimeout that returns a mock AI response. This is the integration point for connecting to a real LLM backend.
+
+## Documentation
+
+- `docs/UX-UI-RECOMMENDATIONS.md` - Comprehensive UI/UX guidelines for responsive design, accessibility, and mobile optimization
+
+## UI/UX Guidelines
+
+When modifying UI components, refer to `docs/UX-UI-RECOMMENDATIONS.md` for:
+- **Responsive breakpoints**: Mobile (<640px), Tablet (640-1024px), Desktop (>1024px)
+- **Touch targets**: Minimum 44x44px for mobile (Apple HIG)
+- **Accessibility**: ARIA labels, focus management, screen reader announcements
+- **Safe areas**: Support for device notches and home indicators
+- **Performance**: Reduced motion support, debounced resize handlers

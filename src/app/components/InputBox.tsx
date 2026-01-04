@@ -147,7 +147,7 @@ export function InputBox({
                 <Lightbulb className="size-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold text-foreground">Suggested Prompts</h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto p-1 -m-1">
                 {SUGGESTIONS.map((item, index) => (
                   <button
                     key={item.title}

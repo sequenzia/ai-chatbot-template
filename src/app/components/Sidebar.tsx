@@ -213,7 +213,7 @@ export function Sidebar({
                     </span>
                   </div>
                   <span className="flex-1 text-left">
-                    Sarah Smith
+                    Stephen Sequenzia
                   </span>
                 </button>
 
@@ -310,7 +310,7 @@ export function Sidebar({
                           <div className="size-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-foreground">
                             <span className="text-xs font-medium">SS</span>
                           </div>
-                          <span className="text-sm font-medium text-foreground">Sarah Smith</span>
+                          <span className="text-sm font-medium text-foreground">Stephen Sequenzia</span>
                         </div>
                       </div>
                       <button

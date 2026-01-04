@@ -190,7 +190,7 @@ export function InputBox({
               onKeyDown={handleKeyDown}
               placeholder={isFixed ? "Reply..." : "How can I help you today?"}
               aria-label={isFixed ? "Reply to conversation" : "Start a conversation"}
-              className="w-full bg-transparent border-none outline-none focus:ring-0 resize-none px-4 py-3 text-foreground placeholder:text-muted-foreground max-h-[120px] sm:max-h-[160px] md:max-h-[200px] overflow-y-auto min-h-[56px] text-base input-landscape-constraint"
+              className="no-focus-ring w-full bg-transparent border-0 outline-none focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 resize-none px-4 py-3 text-foreground placeholder:text-muted-foreground max-h-[120px] sm:max-h-[160px] md:max-h-[200px] overflow-y-auto min-h-[56px] text-base input-landscape-constraint"
             />
 
             {/* Bottom Bar: Tools & Actions */}

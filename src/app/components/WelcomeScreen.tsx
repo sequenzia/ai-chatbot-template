@@ -43,9 +43,8 @@ export function WelcomeScreen({
             isFixed={false}
           />
         </div>
-      </motion.div>
 
-      <nav className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-2xl" aria-label="Quick start suggestions">
+        <nav className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full" aria-label="Quick start suggestions">
         {SUGGESTIONS.map((item, index) => (
           <motion.button
             key={item.title}
@@ -62,7 +61,8 @@ export function WelcomeScreen({
             </span>
           </motion.button>
         ))}
-      </nav>
+        </nav>
+      </motion.div>
     </div>
   );
 }

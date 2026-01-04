@@ -39,7 +39,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <div
-        className="flex h-screen w-full bg-background text-foreground font-sans antialiased overflow-hidden transition-colors duration-200"
+        className="flex h-dvh w-full bg-background text-foreground font-sans antialiased overflow-hidden transition-colors duration-200"
         style={{
           paddingBottom: 'var(--safe-area-inset-bottom)',
           paddingLeft: 'var(--safe-area-inset-left)',
@@ -55,7 +55,7 @@ export default function App() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col relative h-screen min-w-0">
+        <main className="flex-1 flex flex-col relative h-full min-w-0">
           {messages.length === 0 ? (
             <WelcomeScreen
               onSelectPrompt={handleSendMessage}

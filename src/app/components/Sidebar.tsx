@@ -87,7 +87,7 @@ export function Sidebar({
           stiffness: 300,
           damping: 30,
         }}
-        className="fixed lg:relative z-50 h-screen bg-sidebar border-r border-sidebar-border overflow-hidden flex flex-col shrink-0 text-sidebar-foreground transition-colors duration-200 sidebar-landscape-constraint"
+        className="fixed lg:relative z-50 h-dvh bg-sidebar border-r border-sidebar-border overflow-hidden flex flex-col shrink-0 text-sidebar-foreground transition-colors duration-200 sidebar-landscape-constraint"
         style={{
           paddingTop: 'var(--safe-area-inset-top)',
           paddingBottom: 'var(--safe-area-inset-bottom)',
